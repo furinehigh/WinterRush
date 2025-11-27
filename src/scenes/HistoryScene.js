@@ -1,4 +1,4 @@
-export default class HIstoryScene extends Phaser.Scene {
+export default class HistoryScene extends Phaser.Scene {
     constructor() {super('history')}
 
     create(){
