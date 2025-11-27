@@ -100,6 +100,52 @@ export default class UI extends Phaser.Scene {
             .on('pointerout', () => this.scene.get('game').events.emit('ui:left:up'))
         this.add.text(80, padY, '◀', {font: '32px Arial', fill: '#fff'}).setOrigin(0.5).setDepth(1001)
 
-        this.jumbBtn = this.add.rectangle(this.scale.width - 140, padY, )
+        this.rightBtn = this.add.rectangle(80, padY, 120, 80, 0x000000, 0.25).setOrigin(0.5).setDepth(1000)
+            .setInterective().on('pointerdown', () => this.scene.get('game').events.emit('ui:right:down') )
+            .on('pointerup', ()=> this.scene.get('game').events.emit('ui:right:up'))
+            .on('pointerout', () => this.scene.get("game").events.emit('ui:right:up'))
+        this.add.text(220, padY, '▶', {font: '32px Arial', fill: '#fff'}).setOrigin(0.5).setDepth(1001)
+
+
+
+        this.jumbBtn = this.add.rectangle(this.scale.width - 140, padY, 120, 80, 0x000000, 0.25).setOrigin(0.5).setDepth(1000)
+            .setInterective().on('pointerdown', () => this.scene.get('game').events.emit('ui:jump'))
+        this.add.text(this.scale.width - 140, padY, 'Jump', {font: '20px Arial', fill: '#fff'}).setOrigin(0.5).setDepth(1001)
+
+        this.downBtn = this.add.rectangle(this.scale.width - 280, padY, 120, 80, 0x000000, 0.25).setOrigin(0.5).setDepth(1000)
+            .setInterective().on('pointerdown', () => this.scene.get('game').events.emit('ui:down:start'))
+            .on('pointerup', () => this.scene.get('game').events.emit('ui:down:stop'))
+            .on('pointerdown', () => this.scene.get('game').events.emit('ui:down:stop'))
+        this.add.text(this.scale.width - 280, padY, 'Slide', {font: '18px Arial', fill: '#fff'}).setOrigin(0.5).setDepth(1001)
+
+        
     }
+
+
+    togglePause(){
+        const game = this.scene.get('game')
+        if (!game) return
+
+        this.paused = !this.paused
+        if (this.paused) {
+            this.pauseBtn.setText('Resume')
+            game.scene.pause()
+            this.scene.pause('game')
+            this.showCenterText('Paused', 800)
+        } else {
+            this.pauseBtn.setText('Pause')
+            game.scene.resume()
+            this.scene.resume('game')
+        }
+    }
+
+    toggleMute() {
+        this.muted = !this.muted
+        this.muteBtn.setText(this.muted ? 'Unmute' : 'Mute')
+
+        const game = this.scene.get('game')
+        if (game) game.events.emit('ui:mute', this.muted)
+    }
+
+
 }
