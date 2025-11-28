@@ -22,7 +22,7 @@ export default class Game extends Phaser.Scene {
         })
 
         // player
-        this.player = this.physics.add.sprite(200, 400, 'player_run')
+        this.player = this.physics.add.sprite(200, 500, 'player_run')
         this.player.setScale(1)
         this.player.setCollideWorldBounds(true)
         this.player.body.setSize(this.player.width * 0.6, this.player.height * 0.6)
@@ -35,7 +35,7 @@ export default class Game extends Phaser.Scene {
         this.cursors = this.input.keyboard.createCursorKeys()
 
         // walls
-        this.topWall = this.add.rectangle(450, 150, 900, 20)
+        this.topWall = this.add.rectangle(450, 350, 900, 20)
         this.bottomWall = this.add.rectangle(450, 700, 900, 20)
         this.physics.add.existing(this.topWall, true)
         this.physics.add.existing(this.bottomWall, true)
@@ -44,10 +44,12 @@ export default class Game extends Phaser.Scene {
 
         // obstacles
         this.obstacles = this.physics.add.group()
-        this.groundSpeed = 2
+        this.groundSpeed = 4
+        const delay = Phaser.Math.Between(700, 1500)
+
 
         this.time.addEvent({
-            delay: 1000,
+            delay,
             loop: true,
             callback: () => this.spawnObstacle()
         })
@@ -123,9 +125,9 @@ export default class Game extends Phaser.Scene {
     spawnObstacle() {
         const types = ['tree', 'rock']
         const type = Phaser.Math.RND.pick(types)
-        const y = Phaser.Math.Between(220, 640)
+        const y = Phaser.Math.Between(380, 680)
 
-        const startX = this.scale.width + 100
+        const startX = this.scale.width + 50
 
         const obj = this.obstacles.create(startX, y, type)
 
