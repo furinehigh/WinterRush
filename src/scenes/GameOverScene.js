@@ -5,10 +5,20 @@ export default class GameOverScene extends Phaser.Scene {
         this.score = data.score
         this.distance = data.distance
         this.timeElapsed = data.time
+        this.bgOffset = data.bgOffset || 0
     }
 
     create() {
         const {width, height} = this.scale
+
+        this.bg = this.add.tileSprite(0,0,width, height, 'bg')
+            .setOrigin(0)
+
+        const tex = this.textures.get('bg').getSourceImage()
+        this.bg.tileScaleX = width / tex.width
+        this.bg.tileScaleY = height / tex.height
+
+        this.bg.tilePositionX = this.bgOffset
         
         this.saveHistory()
 
@@ -19,34 +29,34 @@ export default class GameOverScene extends Phaser.Scene {
         }
 
         this.add.text(width / 2, 120, 'Game Over', {
-            font: '50px Arial',
+            font: '50px SnowtopCaps',
             fill: '#fff'
         }).setOrigin(0.5)
 
         this.add.text(width/2, 200, `Score: ${this.score}`, {
-            font: '30px Arial',
+            font: '30px SnowtopCaps',
             fill: '#fff'
         }).setOrigin(0.5)
 
         this.add.text(width / 2, 240, `Distance: ${Math.floor(this.distance)}m`, {
-            font: '26px Arial',
+            font: '26px SnowtopCaps',
             fill: '#fff'
         }).setOrigin(0.5)
 
         this.add.text(width/2, 280, `Time: ${this.timeElapsed}s`, {
-            font: '26px Arial',
+            font: '26px SnowtopCaps',
             fill: '#fff'
         }).setOrigin(0.5)
 
         const restartBtn = this.add.text(width / 2, 350, 'Play Again', {
-            font: '32px Arial',
+            font: '32px SnowtopCaps',
             fill: '#00f',
             backgroundColor: '#fff',
             padding: 10
         }).setOrigin(0.5).setInteractive({useHandCrusor: true})
 
         const homeBtn = this.add.text(width/2, 420, 'Menu', {
-            font: '28px Arial',
+            font: '28px SnowtopCaps',
             fill: '#fff'
         }).setOrigin(0.5).setInteractive()
 

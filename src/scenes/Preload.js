@@ -26,6 +26,8 @@ export default class Preload extends Phaser.Scene {
     }
 
     create() {
-        this.scene.start('start')
+        document.fonts.ready.then(() => {
+            this.scene.start('start')
+        })
     }
 }

@@ -4,13 +4,12 @@ export default class Game extends Phaser.Scene {
     }
 
     create() {
-        this.bg = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, 'bg')
-            .setOrigin(0)
-            .setScrollFactor(0)
+        this.bg1 = this.add.image(0, 0, 'bg').setOrigin(0)
+        this.bg2 = this.add.image(this.scale.width, 0, 'bg').setOrigin(0)
 
-        const tex = this.textures.get('bg').getSourceImage()
-        this.bg.tileScaleX = this.scale.width / tex.width
-        this.bg.tileScaleY = this.scale.height / tex.height
+        this.bg1.setDisplaySize(this.scale.width, this.scale.height)
+        this.bg2.setDisplaySize(this.scale.width, this.scale.height)
+
 
         this.scale.on('resize', (size) => {
             if (!size) return
@@ -81,8 +80,16 @@ export default class Game extends Phaser.Scene {
     }
 
     update() {
-        const speed = this.groundSpeed * this.bg.tileScaleX
-        this.bg.tilePositionX += speed
+        this.bg1.x -= this.groundSpeed
+        this.bg2.x -= this.groundSpeed
+
+        // wrap around
+        if (this.bg1.x + this.bg1.displayWidth <= 0) {
+            this.bg1.x = this.bg2.x + this.bg2.displayWidth
+        }
+        if (this.bg2.x + this.bg2.displayWidth <= 0) {
+            this.bg2.x = this.bg1.x + this.bg1.displayWidth
+        }
 
         if (this.cursors.up.isDown) this.player.setVelocityY(-260)
         else if (this.cursors.down.isDown) this.player.setVelocityY(260)
@@ -106,7 +113,7 @@ export default class Game extends Phaser.Scene {
 
 
         this.obstacles.getChildren().forEach(obj => {
-            obj.x -= speed
+            obj.x -= this.groundSpeed
             if (obj.x < -200) obj.destroy()
         })
 
@@ -154,10 +161,14 @@ export default class Game extends Phaser.Scene {
     }
 
     gameOver() {
+        this.physics.world.colliders.destroy()
+
+        const offset = this.bg?.tilePositionX || 0
         this.scene.start('gameover', {
             score: this.score,
             distance: this.distance,
-            time: this.timeElapsed
+            time: this.timeElapsed,
+            bgOffset: offset
         })
     }
 }

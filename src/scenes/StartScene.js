@@ -5,24 +5,25 @@ export default class StartScene extends Phaser.Scene {
         const { width, height } = this.scale
 
         this.bg = this.add.image(0, 0, 'bg')
-        .setOrigin(0)
-        .setDisplaySize(width, height)
+            .setOrigin(0)
+            .setDisplaySize(width, height)
 
 
 
         this.add.text(width / 2, 120, "WinterRush", {
-            font: "48px Arial",
+            fontFamily: 'SnowtopCaps',
+            fontSize: '15vw',
             fill: "#fff"
         }).setOrigin(0.5)
 
         const topScore = localStorage.getItem("top_score") || 0
         this.add.text(width / 2, 190, `Top Score: ${topScore}`, {
-            font: "28px Arial",
-            fill: "#ff0"
+            font: "28px SnowtopCaps",
+            fill: "#f0f"
         }).setOrigin(0.5)
 
         const playBtn = this.add.text(width / 2, 300, "PLAY", {
-            font: "40px Arial",
+            font: "40px SnowtopCaps",
             fill: "#00f",
             backgroundColor: "#fff",
             padding: { x: 20, y: 10 }
@@ -36,7 +37,7 @@ export default class StartScene extends Phaser.Scene {
         })
 
         const historyBtn = this.add.text(width / 2, 380, "History", {
-            font: "28px Arial",
+            font: "28px SnowtopCaps",
             fill: "#fff"
         })
             .setOrigin(0.5)
