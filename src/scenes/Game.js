@@ -22,7 +22,7 @@ export default class Game extends Phaser.Scene {
         })
 
         // player
-        this.player = this.physics.add.sprite(200, 300, 'player_run')
+        this.player = this.physics.add.sprite(200, 400, 'player_run')
         this.player.setScale(1)
         this.player.setCollideWorldBounds(true)
         this.player.body.setSize(this.player.width * 0.6, this.player.height * 0.6)
@@ -47,7 +47,7 @@ export default class Game extends Phaser.Scene {
         this.groundSpeed = 2
 
         this.time.addEvent({
-            delay: 1400,
+            delay: 1000,
             loop: true,
             callback: () => this.spawnObstacle()
         })

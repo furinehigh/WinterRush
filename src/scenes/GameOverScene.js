@@ -61,6 +61,7 @@ export default class GameOverScene extends Phaser.Scene {
         }).setOrigin(0.5).setInteractive()
 
         homeBtn.on('pointerdown', () => this.scene.start('start'))
+        restartBtn.on('pointerdown', () => this.scene.start('game'))
     }
 
     saveHistory(){
