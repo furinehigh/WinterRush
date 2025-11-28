@@ -8,24 +8,36 @@ export default class Game extends Phaser.Scene {
             .setOrigin(0)
             .setScrollFactor(0)
 
+        const tex = this.textures.get('bg').getSourceImage()
+        this.bg.tileScaleX = this.scale.width / tex.width
+        this.bg.tileScaleY = this.scale.height / tex.height
+
         this.scale.on('resize', (size) => {
-            if (size) {
-                this.bg.setSize(size.width, size.height)
-            }
+            if (!size) return
+
+            this.bg.setSize(size.width, size.height)
+
+            const tex = this.textures.get('bg').getSourceImage()
+            this.bg.tileScaleX = size.width / tex.width
+            this.bg.tileScaleY = size.height / tex.height
         })
 
         // player
         this.player = this.physics.add.sprite(200, 300, 'player_run')
         this.player.setScale(1)
         this.player.setCollideWorldBounds(true)
-        this.player.body.setSize(this.player.width * 0.6, this.player.height * 0.8)
+        this.player.body.setSize(this.player.width * 0.6, this.player.height * 0.6)
+        this.player.body.setOffset(
+            (this.player.width - this.player.body.width) / 2,
+            (this.player.height - this.player.body.height) / 2
+        )
 
         this.createAnimations()
         this.cursors = this.input.keyboard.createCursorKeys()
 
         // walls
-        this.topWall = this.add.rectangle(450, 10, 900, 20)
-        this.bottomWall = this.add.rectangle(450, 480, 900, 20)
+        this.topWall = this.add.rectangle(450, 150, 900, 20)
+        this.bottomWall = this.add.rectangle(450, 700, 900, 20)
         this.physics.add.existing(this.topWall, true)
         this.physics.add.existing(this.bottomWall, true)
         this.physics.add.collider(this.player, this.topWall)
@@ -33,7 +45,7 @@ export default class Game extends Phaser.Scene {
 
         // obstacles
         this.obstacles = this.physics.add.group()
-        this.obstacleSpeed = 250
+        this.groundSpeed = 2
 
         this.time.addEvent({
             delay: 1400,
@@ -63,13 +75,14 @@ export default class Game extends Phaser.Scene {
             delay: 10000,
             loop: true,
             callback: () => {
-                this.obstacleSpeed += 40
+                this.groundSpeed += 1
             }
         })
     }
 
     update() {
-        this.bg.tilePositionX += 2
+        const speed = this.groundSpeed * this.bg.tileScaleX
+        this.bg.tilePositionX += speed
 
         if (this.cursors.up.isDown) this.player.setVelocityY(-260)
         else if (this.cursors.down.isDown) this.player.setVelocityY(260)
@@ -90,21 +103,34 @@ export default class Game extends Phaser.Scene {
         // emit updates to UI
         this.events.emit("ui:update-score", this.score)
         this.events.emit("ui:update-distance", Math.floor(this.distance))
+
+
+        this.obstacles.getChildren().forEach(obj => {
+            obj.x -= speed
+            if (obj.x < -200) obj.destroy()
+        })
+
+
     }
 
     spawnObstacle() {
         const types = ['tree', 'rock']
         const type = Phaser.Math.RND.pick(types)
-        const x = Phaser.Math.Between(200, 850)
+        const y = Phaser.Math.Between(220, 640)
 
-        const obj = this.obstacles.create(980, x, type)
-        obj.setVelocityX(-280)
-        obj.setImmovable(true)
+        const startX = this.scale.width + 100
+
+        const obj = this.obstacles.create(startX, y, type)
+
         obj.body.allowGravity = false
-        obj.setScale(0.6)
 
-        this.time.delayedCall(6000, () => obj.destroy())
+        // the important part: not rigid, no pushback
+        obj.body.moves = false
+
+        obj.setScale(0.6)
     }
+
+
 
     createAnimations() {
         this.anims.create({

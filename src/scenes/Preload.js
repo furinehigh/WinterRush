@@ -6,17 +6,17 @@ export default class Preload extends Phaser.Scene {
         this.load.image('bg', 'assets/bg/bg_still.jpg')
 
         this.load.spritesheet('player_run', 'assets/player/player.png', {
-            frameWidth: 64,
+            frameWidth: 50,
             frameHeight: 64
         })
 
         this.load.spritesheet('player_jump', 'assets/player/player_jump.png', {
-            frameWidth: 64,
+            frameWidth: 50,
             frameHeight: 64
         })
 
         this.load.spritesheet('player_slide', 'assets/player/player_slide.png', {
-            frameWidth: 64,
+            frameWidth: 50,
             frameHeight: 64
         })
 

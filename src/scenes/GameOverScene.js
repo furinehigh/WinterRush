@@ -54,7 +54,7 @@ export default class GameOverScene extends Phaser.Scene {
     }
 
     saveHistory(){
-        let list = JSON.parse(localStorage.getItem('history') || [])
+        let list = JSON.parse(localStorage.getItem('history') || '[]')
 
         list.unshift({
             score: this.score,

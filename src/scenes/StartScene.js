@@ -4,6 +4,12 @@ export default class StartScene extends Phaser.Scene {
     create() {
         const { width, height } = this.scale
 
+        this.bg = this.add.image(0, 0, 'bg')
+        .setOrigin(0)
+        .setDisplaySize(width, height)
+
+
+
         this.add.text(width / 2, 120, "WinterRush", {
             font: "48px Arial",
             fill: "#fff"
@@ -21,8 +27,8 @@ export default class StartScene extends Phaser.Scene {
             backgroundColor: "#fff",
             padding: { x: 20, y: 10 }
         })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true })
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true })
 
         playBtn.on("pointerdown", () => {
             this.scene.start("game")
@@ -33,8 +39,8 @@ export default class StartScene extends Phaser.Scene {
             font: "28px Arial",
             fill: "#fff"
         })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true })
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true })
 
         historyBtn.on("pointerdown", () => this.scene.start("history"))
     }
