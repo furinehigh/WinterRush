@@ -1,12 +1,18 @@
 # WinterRush
-This is a sliding game where u just need to slide and avoid the obstacles with up and down buttons. This is my first game so don't expect much :)
+This is a sliding game where u just need to slide on the ice and avoid the obstacles with up and down buttons. This is my first game so don't expect much :).
 
 ## Tech stack
 - Javascript
 - Phaser.js
 
+## Features
+- Increases difficulty along the way
+- Seperate page for score history
+- Saves best score
+- Users can play as long as they want, there is now ending yet :)
+
 ## Installation
-Its super easy to setup this game, bcoz all the required images, fonts, and js libraries are loaded already.
+Its super easy to setup this game, bcoz all the required images, fonts, and js libraries are loaded already in particular folders.
 
 1. Clone the repo
 ```bash
