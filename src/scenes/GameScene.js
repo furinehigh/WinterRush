@@ -134,38 +134,72 @@ export default class Game extends Phaser.Scene {
         this.obstacleGroup.add(obs)
     }
 
+    jump() {
+        this.isJumping = true
 
+        this.sfxJump.play()
+        this.player.setTexture('player_jump')
 
-    createAnimations() {
-        this.anims.create({
-            key: 'run',
-            frames: this.anims.generateFrameNumbers('player_run', { start: 0, end: 5 }),
-            frameRate: 10,
-            repeat: -1
-        })
-
-        this.anims.create({
-            key: 'jump',
-            frames: this.anims.generateFrameNumbers('player_jump', { start: 0, end: 3 }),
-            frameRate: 10
-        })
-
-        this.anims.create({
-            key: 'slide',
-            frames: this.anims.generateFrameNumbers('player_slide', { start: 0, end: 1 }),
-            frameRate: 10
+        this.tweens.add({
+            targets: this.player,
+            y: this.playerY - 150,
+            duration: 400,
+            yoyo: true,
+            ease: 'Sine.easeOut',
+            onComplete: () => {
+                this.isJumping = false
+                this.player.setTexture('player_ski')
+                this.player.y = this.playerY;
+            }
         })
     }
 
-    gameOver() {
-        this.physics.world.colliders.destroy()
 
-        const offset = this.bg?.tilePositionX || 0
-        this.scene.start('gameover', {
-            score: this.score,
-            distance: this.distance,
-            time: this.timeElapsed,
-            bgOffset: offset
+    duck() {
+        this.isDucking = true
+        this.sfxSlide.play()
+
+        this.player.setTexture('player_duck')
+
+        this.time.delayedCall(800, () => {
+            this.isDucking = false
+            this.player.setTexture("player_ski")
+
         })
     }
+
+    checkCollisionType(obs) {
+        let hit = false
+
+        if (obs.type === 'tree') {
+            hit = true
+        } else if (obs.type == 'rock'){
+            if (!this.isJumping) hit = true
+        } else if (obs.type == 'log') {
+            if (!this.isDucking) hit = true
+        }
+
+        if (hit) this.doGameOver()
+    }
+
+    doGameOver() {
+        if (this.gameOverFlag) return;
+
+        this.gameOverFlag = true
+        this.physics.pause()
+
+        this.sfxCrash.play()
+
+        this.player.setTint(0xff0000)
+
+        this.cameras.main.shake(500, 0.05)
+
+        this.time.delayedCall(1000, () => {
+            this.scene.stop('ui')
+
+            this.scene.start('gamevoer', {score: this.score})
+        })
+    }
+
+
 }
