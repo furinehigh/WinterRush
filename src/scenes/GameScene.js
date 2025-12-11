@@ -35,64 +35,103 @@ export default class Game extends Phaser.Scene {
 
 
         this.speed = 10
+
+        this.score = 0
+        this.isJumping = false
+        this.isDucking = false
+        this.gameOverFlag = false
+
+        this.cursors = this.input.keyboard.createCursorKeys()
+
+        this.obstacleGroup = this.add.group()
+
+        this.time.addEvent({delay: 1200, callback: this.spawnObstacle, callbackScope: this, loop: true})
+
+        this.time.addEvent({delay: 5000, callback: () => {this.speed += 2}, loop: true})
+
+        this.scene.launch('ui')
     }
 
     update() {
-        this.bg1.x -= this.groundSpeed
-        this.bg2.x -= this.groundSpeed
+        if (this.gameOverFlag) return;
 
-        // wrap around
-        if (this.bg1.x + this.bg1.displayWidth <= 0) {
-            this.bg1.x = this.bg2.x + this.bg2.displayWidth
-        }
-        if (this.bg2.x + this.bg2.displayWidth <= 0) {
-            this.bg2.x = this.bg1.x + this.bg1.displayWidth
-        }
+        this.ground.tilePositionY -= this.speed
 
-        if (this.cursors.up.isDown) this.player.setVelocityY(-260)
-        else if (this.cursors.down.isDown) this.player.setVelocityY(260)
-        else this.player.setVelocityY(0)
+        const moveSpeed = 400
 
-        if (this.cursors.down.isDown) {
-            this.player.play('slide', true)
-        } else if (!this.player.body.blocked.down) {
-            this.player.play('jump', true)
+        if (this.cursors.left.isDown) {
+            this.player.setVelocityX(-moveSpeed)
+            this.player.setFlipX(true)
+        } else if (this.cursors.right.isDown) {
+            this.player.setVelocityX(moveSpeed)
+            this.player.setFlipX(false)
         } else {
-            this.player.play('run', true)
+            this.player.setVelocityX(0)
+            this.player.setDragX(1000)
         }
 
-        // update score & distance
-        this.score++
-        this.distance += 0.5
 
-        // emit updates to UI
-        this.events.emit("ui:update-score", this.score)
-        this.events.emit("ui:update-distance", Math.floor(this.distance))
+        if (this.cursors.up.isDown && !this.isJumping && !this.isDucking){
+            this.jump()
+        } else if (this.cursors.down.isDown && !this.isJumping && !this.isDucking) {
+            this.duck()
+        }
 
+        const horizonY = this.ch * 0.3
+        const endY = this.ch + 100
 
-        this.obstacles.getChildren().forEach(obj => {
-            obj.x -= this.groundSpeed
-            if (obj.x < -200) obj.destroy()
+        this.obstacleGroup.getChildren().forEach(obs => {
+            obs.zProgress += (this.speed * 0.0005)
+
+            const scale = Math.pow(obs.zProgress, 3)
+
+            obs.setScale(scale)
+
+            obs.x = (this.cw / 2) + (obs.laneOffset * scale * this.cw)
+
+            obs.y = horizonY + (obs.zProgress * (this.ch - horizonY))
+
+            obs.setDepth(obs.y)
+
+            if (obs.zProgress > 0.85 && obs.zProgress < 1.1) {
+                if (Math.abs(obs.x - this.player.x) < 50 * scale) {
+                    this.checkCollisionType(obs)
+                }
+            }
+
+            if (obs.zProgress > 1.2) {
+                obs.destroy()
+
+                this.score += 10
+                
+                this.events.emit('updateScore', this.score)
+            }
         })
-
 
     }
 
     spawnObstacle() {
-        const types = ['tree', 'rock']
+        if (this.gameOverFlag) return;
+
+        const lane = Phaser.Math.RND.pick([-0.6, -0.3, 0, 0.3, 0.6])
+
+        const types = ['tree', 'rock', 'log']
+
         const type = Phaser.Math.RND.pick(types)
-        const y = Phaser.Math.Between(380, 680)
 
-        const startX = this.scale.width + 50
+        const obs = this.add.sprite(this.cw / 2, 0, type)
 
-        const obj = this.obstacles.create(startX, y, type)
+        this.physics.add.existing(obs, true)
 
-        obj.body.allowGravity = false
+        obs.type = type
+        obs.laneOffset = lane
 
-        // the important part: not rigid, no pushback
-        obj.body.moves = false
+        obs.zProgress = 0.01
+        obs.setScale(0)
 
-        obj.setScale(0.6)
+        if (type === 'tree') obs.play('tree_sway')
+
+        this.obstacleGroup.add(obs)
     }
 
 
