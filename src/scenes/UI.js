@@ -2,48 +2,36 @@ export default class UI extends Phaser.Scene {
     constructor() { super('ui') }
 
     create() {
-        const { width } = this.scale
-
-        this.scoreText = this.add.text(10, 10, "Score: 0", { font: "20px Arial", fill: "#fff" }).setDepth(999)
-        this.distText = this.add.text(10, 34, "Distance: 0m", { font: "20px Arial", fill: "#fff" }).setDepth(999)
-        this.timeText = this.add.text(width - 150, 10, "Time: 0s", { font: "18px Arial", fill: "#fff" }).setDepth(999)
-
-        this.pauseBtn = this.add.text(width - 150, 36, "Pause", {
-            font: "16px Arial",
-            backgroundColor: "#222",
-            padding: 6
-        })
-        .setInteractive({ useHandCursor: true })
-        .on("pointerdown", () => this.togglePause())
-
-        // get game scene events
-        const game = this.scene.get("game")
-
-        game.events.on("ui:update-score", (score) => {
-            this.scoreText.setText("Score: " + score)
+        this.scoreText = this.add.text(20, 20, '0', {
+            fontFamily: 'SnowtopCaps, Arial',
+            fontSize: '48px',
+            color: '#ffffff',
+            stroke: '#000',
+            strokeThickness: 4
         })
 
-        game.events.on("ui:update-distance", (dist) => {
-            this.distText.setText("Distance: " + dist + "m")
+        this.scoreText.y = -50
+
+        this.tweens.add({
+            targets: this.scoreText,
+            y: 20,
+            duration: 500,
+            ease: 'Back.easeOut'
         })
 
-        game.events.on("ui:update-time", (t) => {
-            this.timeText.setText("Time: " + t + "s")
+        const game = this.scene.get('game')
+
+        game.events.on('updateScore', (score) => {
+            this.scoreText.setText(score)
+
+            this.tweens.add({
+                targets: this.scoreText,
+                scale: 1.2,
+                duration: 100, 
+                yoyo: true
+            })
         })
     }
 
-    togglePause() {
-        const game = this.scene.get("game")
-        if (!game) return
 
-        this.paused = !this.paused
-
-        if (this.paused) {
-            game.scene.pause()
-            this.pauseBtn.setText("Resume")
-        } else {
-            game.scene.resume()
-            this.pauseBtn.setText("Pause")
-        }
-    }
 }
