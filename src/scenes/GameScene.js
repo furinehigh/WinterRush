@@ -4,7 +4,37 @@ export default class Game extends Phaser.Scene {
     }
 
     create() {
-        
+        this.cw = this.scale.width
+        this.ch = this.scale.height
+
+        this.sfxJump = this.sound.add('sfx_jump')
+        this.sfxSlide = this.sound.add('sfx_slide')
+        this.sfxCrash = this.sound.add('sfx_crash')
+
+        this.add.image(this.cw /2 , 0, 'bg_sky').setOrigin(0.5, 0).setDisplaySize(this.cw, this.ch)
+
+        this.ground = this.add.tileSprite(this.cw/2, this.ch, this.cw, this.ch, 'ground')
+
+        this.ground.setOrigin(0.5, 1)
+
+        this.playerY = this.ch * 0.8
+        this.player = this.physics.add.sprite(this.cw / 2, this.playerY, 'player_ski')
+
+        this.player.setDepth(1000)
+
+        this.player.setColliderWorldBounds(true)
+
+        this.player.body.setSize(40, 40)
+
+        this.player.body.setOffset(44, 80)
+
+        this.anims.create({key: 'ski', frames: this.anims.generateFrameNumbers('player_ski'), frameRate: 8, repeat: -1})
+        this.anims.create({key: 'tree_sway', frames: this.anims.generateFrameNumbers('tree'), frameRate: 4, repeat: -1})
+
+        this.player.play('ski')
+
+
+        this.speed = 10
     }
 
     update() {
