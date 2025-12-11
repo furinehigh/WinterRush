@@ -5,17 +5,19 @@ export default class Preload extends Phaser.Scene {
         // background
         this.load.setPath('assets/')
 
-        this.load.image('bg_sky', 'bg/sky.png')
-        this.load.image('ground', 'bg/ground_texture.png')
+        this.load.image('bg_sky', 'bg/bg_sky.webp')
+        this.load.image('ground', 'bg/ground_texture.jpg')
 
         this.load.spritesheet('player_ski', 'player/player_ski.png', {
-            frameWidht: 128, frameHeight: 128
+            frameWidth: 128, frameHeight: 128
         })
 
         this.load.image('player_jump', 'player/player_jump.png')
         this.load.image('player_duck', 'player/player_duck.png')
 
-        this.load.spritesheet('tree', 'obstacles/tree_shake.png')
+        this.load.spritesheet('tree', 'obstacles/tree_shake.png', {
+            frameWidth: 264, frameHeight: 350
+        })
         this.load.image('rock', 'obstacles/rock.png')
         this.load.image('log', 'obstacles/log_horizontal.png')
 

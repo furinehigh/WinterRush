@@ -4,45 +4,42 @@ export default class StartScene extends Phaser.Scene {
     create() {
         const { width, height } = this.scale
 
-        this.bg = this.add.image(0, 0, 'bg')
-            .setOrigin(0)
-            .setDisplaySize(width, height)
+        this.add.image(width /2, height/2, 'bg_sky').setDisplaySize(width, height)
+        
 
-
-
-        this.add.text(width / 2, 120, "WinterRush", {
-            fontFamily: 'SnowtopCaps',
-            fontSize: '15vw',
-            fill: "#fff"
+        const title = this.add.text(width/2, height * 0.3, "WINTER\nRUSH", {
+            fontFamily: 'SnowtopCaps', fontSize: '80px',
+            align: 'center', color: '#bfefff', stroke: '#000', strokeThickness: 6
         }).setOrigin(0.5)
 
-        const topScore = localStorage.getItem("top_score") || 0
-        this.add.text(width / 2, 190, `Top Score: ${topScore}`, {
-            font: "28px SnowtopCaps",
-            fill: "#f0f"
+        this.tweens.add({
+            targets: title,
+            y: title.y - 20,
+            duration: 2000,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        })
+
+
+        const playBtn = this.add.container(width/2, height * 0.6)
+
+        const btnBg = this.add.rectangle(0, 0, 200, 80, 0xffffff).setInteractive({useHandCursor: true})
+
+        const btnText = this.add.text(0, 0, "PLAY", {
+            fontSize: '40px', color: '#000', fontFamily: 'SnowtopCaps'
         }).setOrigin(0.5)
 
-        const playBtn = this.add.text(width / 2, 300, "PLAY", {
-            font: "40px SnowtopCaps",
-            fill: "#00f",
-            backgroundColor: "#fff",
-            padding: { x: 20, y: 10 }
-        })
-            .setOrigin(0.5)
-            .setInteractive({ useHandCursor: true })
+        playBtn.add([btnBg, btnText])
 
-        playBtn.on("pointerdown", () => {
-            this.scene.start("game")
-            this.scene.launch("ui")
+        btnBg.on('pointerover', () => {
+            playBtn.setScale(1.1)
         })
-
-        const historyBtn = this.add.text(width / 2, 380, "History", {
-            font: "28px SnowtopCaps",
-            fill: "#fff"
+        btnBg.on('pointerout', () => {
+            playBtn.setScale(1.0)
         })
-            .setOrigin(0.5)
-            .setInteractive({ useHandCursor: true })
-
-        historyBtn.on("pointerdown", () => this.scene.start("history"))
+        btnBg.on('pointerdown', () => {
+            this.scene.start('game')
+        })
     }
 }
