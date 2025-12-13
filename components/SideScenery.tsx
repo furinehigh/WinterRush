@@ -150,7 +150,7 @@ function addJungleItem(arr: SceneryItem[], idBase: number, zBase: number, side: 
     // FIX: Rock scale drastically reduced (0.015)
     // Trees kept normal
     const finalScale: [number, number, number] = isRock 
-        ? [0.015, 0.015, 0.015] 
+        ? [0.005, 0.005, 0.005] 
         : [scaleBase, scaleBase, scaleBase]
 
     arr.push({
