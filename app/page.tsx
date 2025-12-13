@@ -176,7 +176,7 @@ function UIOverlay() {
                     setTimeout(() => {
 
                       startGame()
-                    }, 500)
+                    }, 200)
                   }}
                   className="mt-10 px-12 py-3 text-xl font-bold border border-white/30 text-white hover:border-white transition-all"
                 >
