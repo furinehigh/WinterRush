@@ -2,11 +2,13 @@
 
 import GameScene from "@/components/GameScene"
 import { useGameStore } from "@/store/gameStore"
-
+import { useProgress } from "@react-three/drei"
+import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useState } from "react"
 
 export default function Home() {
   return (
-    <main className="relative w-full h-screen bg-sky-200 overflow-hidden">
+    <main className="relative w-full h-screen overflow-hidden bg-transparent ">
       <div className="absolute inset-0 z-0">
         <GameScene />
       </div>
@@ -19,51 +21,146 @@ export default function Home() {
 function UIOverlay() {
   const { status, score, startGame, reset } = useGameStore()
 
+  const { progress } = useProgress()
+
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  useEffect(() => {
+    if (progress == 100) {
+      setTimeout(() => setIsLoaded(true), 500)
+
+    }
+  }, [progress])
 
   return (
-    <div className="absolute inset-0 z-10 pointer-events-none flex flex-col items-center justify-center font-bold font-sans text-white">
-      {status === 'PLAYING' && (
-        <div className="absolute top-8 text-5xl drop-shadow-lg tracking-wide">
-          {Math.floor(score)}
-        </div>
-      )}
+    <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center text-white">
 
-      {status === 'MENU' && (
-        // CHANGE: pointer-events-none -> pointer-events-auto
-        <div className="bg-black/40 backdrop-blur-md p-12 rounded-2xl text-center pointer-events-auto shadow-2xl border border-white/20">
-          <h1 className="text-7xl mb-2 text-transparent bg-clip-text bg-gradient-to-b from-cyan-300 to-blue-600 ">
-            WINTER RUSH
-          </h1>
-
-          <p className="text-xl mb-8 text-gray-200">Dodge trees. Don't crash.</p>
-
-          <button onClick={startGame}
-            className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white text-2xl px-10 py-4 rounded-full transition-all transform hover:scale-110 shadow-lg"
+      {/* --- LOADING SCREEN --- */}
+      <AnimatePresence>
+        {!isLoaded && (
+          <motion.div
+            key="loader"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-900 pointer-events-auto"
           >
-            PLAY NOW
-          </button>
+            <h2 className="text-4xl font-black tracking-widest text-white mb-4">
+              LOADING
+            </h2>
+            <div className="w-64 h-2 bg-white/20 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-white"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="mt-2 text-white/50 text-sm font-mono">
+              {Math.floor(progress)}%
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-          <div className="mt-6 text-sm text-gray-300 flex gap-4 justify-center">
-            <span>⬅️ Left</span>
-            <span>⬆️ Jump</span>
-            <span>➡️ Right</span>
-          </div>
-        </div>
-      )}      
-      
-      {status === 'GAME_OVER' && (
-        <div className="bg-red-900/80 backdrop-blur-md p-12 rounded-2xl text-center pointer-events-auto border border-red-500/50">
-          <h2 className="text-6xl mb-4 text-red-200">
-            WIPEOUT!
-          </h2>
-          <div className="text-3xl mb-8">
-            Score: {Math.floor(score)}
-          </div>
-          <button onClick={reset} className="bg-white rext-red-900 hover:bg-gray-200 text-xl px-8 py-3 rounded-full transition-colors font-bold">
-            TRY AGAIN
-          </button>
-        </div>
+
+      {/* --- GAME UI (Only show when loaded) --- */}
+      {isLoaded && (
+        <>
+          {/* SCORE */}
+          <AnimatePresence>
+            {status === 'PLAYING' && (
+              <motion.div
+                key="score"
+                initial={{ opacity: 0, y: -30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: 0.3 }}
+                className="absolute top-6 text-6xl font-black tracking-widest text-white/90"
+              >
+                {Math.floor(score)}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* MENUS */}
+          <AnimatePresence mode="wait">
+            {status === 'MENU' && (
+              <motion.div
+                key="menu"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="pointer-events-auto text-center"
+              >
+                <motion.h1
+                  initial={{ y: -200, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{
+                    duration: 0.9,
+                    ease: [0.16, 1, 0.3, 1]
+                  }}
+                  className="text-[9rem] leading-none font-black tracking-tight text-white "
+                >
+                  WINTER
+                  <br />
+                  RUSH
+                </motion.h1>
+
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                  className="mt-4 text-xl text-white/60 tracking-wider"
+                >
+                  survive the downhill
+                </motion.p>
+
+                <motion.button
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={startGame}
+                  className="mt-12 px-14 py-4 text-2xl font-bold border border-white/30 text-white hover:border-white transition-all"
+                >
+                  PLAY
+                </motion.button>
+              </motion.div>
+            )}
+
+            {status === 'GAME_OVER' && (
+              <motion.div
+                key="over"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35 }}
+                className="pointer-events-auto text-center"
+              >
+                <motion.h2
+                  initial={{ y: -40 }}
+                  animate={{ y: 0 }}
+                  className="text-7xl font-black text-white"
+                >
+                  WIPEOUT
+                </motion.h2>
+
+                <div className="mt-4 text-3xl text-white/70">
+                  {Math.floor(score)}
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.94 }}
+                  onClick={reset}
+                  className="mt-10 px-12 py-3 text-xl font-bold border border-white/30 text-white hover:border-white transition-all"
+                >
+                  RETRY
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
       )}
     </div>
   )
+
 }

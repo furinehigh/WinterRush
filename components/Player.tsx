@@ -138,3 +138,7 @@ export default function Player() {
         </group>
     )
 }
+
+
+useGLTF.preload('/skier_idle.glb')
+useGLTF.preload('/snowman_head.glb')

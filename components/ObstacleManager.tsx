@@ -166,3 +166,7 @@ const Obstacle = ({ data, models }: { data: ObstacleData, models: any }) => {
         </group>
     )
 }
+
+useGLTF.preload('/tree.glb')
+useGLTF.preload('/rock.glb')
+useGLTF.preload('/log.glb')
