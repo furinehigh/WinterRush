@@ -129,7 +129,7 @@ const Obstacle = ({ data, models }: { data: ObstacleData, models: any }) => {
                 >
                     <Clone 
                         object={models.tree} 
-                        scale={0.8} 
+                        scale={0.7} 
                         castShadow 
                         receiveShadow
                     />
@@ -145,6 +145,7 @@ const Obstacle = ({ data, models }: { data: ObstacleData, models: any }) => {
                     <Clone 
                         object={models.rock} 
                         scale={0.02} 
+                        castShadow
                         receiveShadow
                     />
                 </group>
@@ -153,9 +154,6 @@ const Obstacle = ({ data, models }: { data: ObstacleData, models: any }) => {
             {/* LOG (Obstacle you must slide UNDER) */}
             {data.type === 'LOG' && (
                 <group position={[0, 0, 0]}> {/* Lifted HIGH up */}
-                    {/* Visual Supports (Simple cylinders) */}
-
-                    {/* The Actual 3D Model Log placed horizontally */}
                     <group rotation={[0, 0, 0]}> 
                         <Clone 
                             object={models.log} 
