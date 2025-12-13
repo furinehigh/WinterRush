@@ -4,69 +4,82 @@ export default class GameScene extends Phaser.Scene {
     }
 
     create() {
-        this.cw = this.scale.width
-        this.ch = this.scale.height
+        const { width, height } = this.scale
+        this.cw = width
+        this.ch = height
 
+        // --- 1. Audio ---
         this.sfxJump = this.sound.add('sfx_jump')
         this.sfxSlide = this.sound.add('sfx_slide')
         this.sfxCrash = this.sound.add('sfx_crash')
 
-        // Background
-        this.add.image(this.cw / 2, 0, 'bg_sky').setOrigin(0.5, 0).setDisplaySize(this.cw, this.ch)
-        
-        // Ground (Pseudo-3D floor)
-        this.ground = this.add.tileSprite(this.cw/2, this.ch, this.cw, this.ch, 'ground')
-        this.ground.setOrigin(0.5, 1)
+        // --- 2. The Horizon Line (Where Sky meets Ground) ---
+        // Let's say the horizon is 35% down the screen
+        this.horizonY = this.ch * 0.35
 
-        // Player Setup
-        this.playerY = this.ch * 0.8
+        // --- 3. Background (The Sky) ---
+        // Stays at the top, behind everything
+        this.sky = this.add.image(this.cw / 2, 0, 'bg_sky')
+            .setOrigin(0.5, 0)
+            .setDisplaySize(this.cw, this.horizonY + 10) // +10 overlap to prevent gaps
+            .setDepth(0)
+
+        // --- 4. The Ground (The Snowy Slope) ---
+        // Starts at the horizon and goes down
+        this.ground = this.add.tileSprite(this.cw / 2, this.ch, this.cw, this.ch - this.horizonY, 'ground')
+            .setOrigin(0.5, 1) // Anchor at bottom center
+            .setDepth(1)
+
+        // --- 5. Groups ---
+        // We separate "Obstacles" (things that kill you) from "Scenery" (trees on the side)
+        this.obstacleGroup = this.add.group()
+        this.sceneryGroup = this.add.group() // For side trees
+
+        // --- 6. Player Setup ---
+        this.playerY = this.ch * 0.85 // Player is near the bottom
         this.player = this.physics.add.sprite(this.cw / 2, this.playerY, 'player_ski')
-        this.player.setDepth(1000)
-        this.player.setCollideWorldBounds(true) // Fixed typo from 'setColliderWorldBounds'
+        this.player.setDepth(100) // Ensure player is above ground but below UI
+        this.player.setCollideWorldBounds(true)
+        
+        // Hitbox tuning (Make it smaller so you don't die unfairly)
         this.player.body.setSize(40, 40)
         this.player.body.setOffset(44, 80)
 
-        // --- SAFE ANIMATION CREATION ---
-        // 1. Player Animation
-        this.anims.create({
-            key: 'ski', 
-            frames: this.anims.generateFrameNumbers('player_ski'), 
-            frameRate: 8, 
-            repeat: -1
-        })
-
-        // 2. Tree Animation (With Safety Check)
-        // This prevents the crash if the sprite sheet didn't load frames correctly
-        const treeFrames = this.anims.generateFrameNumbers('tree');
-        if (treeFrames && treeFrames.length > 0) {
-            this.anims.create({
-                key: 'tree_sway', 
-                frames: treeFrames, 
-                frameRate: 4, 
-                repeat: -1
-            })
+        // Animations
+        this.anims.create({ key: 'ski', frames: this.anims.generateFrameNumbers('player_ski'), frameRate: 8, repeat: -1 })
+        
+        // Safety check for tree animation
+        if (this.anims.exists('tree_sway')) {
+            // Animation already exists, do nothing
         } else {
-            console.warn("Tree animation could not be created. Check sprite sheet dimensions in Preload.js");
+            const treeFrames = this.anims.generateFrameNumbers('tree');
+            if (treeFrames && treeFrames.length > 0) {
+                this.anims.create({ key: 'tree_sway', frames: treeFrames, frameRate: 4, repeat: -1 })
+            }
         }
 
         this.player.play('ski')
 
-        // Game Variables
+        // --- 7. Variables ---
         this.speed = 10
         this.score = 0
+        this.distance = 0
         this.isJumping = false
         this.isDucking = false
         this.gameOverFlag = false
 
-        // Inputs
+        // --- 8. Inputs ---
         this.cursors = this.input.keyboard.createCursorKeys()
 
-        // Obstacles
-        this.obstacleGroup = this.add.group()
+        // --- 9. Spawners ---
+        // Spawn obstacles (Center lanes)
+        this.time.addEvent({ delay: 1200, callback: this.spawnObstacle, callbackScope: this, loop: true })
+        
+        // Spawn scenery (Far left/right trees) - Faster rate for density
+        this.time.addEvent({ delay: 400, callback: this.spawnScenery, callbackScope: this, loop: true })
 
-        // Timers
-        this.time.addEvent({delay: 1200, callback: this.spawnObstacle, callbackScope: this, loop: true})
-        this.time.addEvent({delay: 5000, callback: () => {this.speed += 2}, loop: true})
+        // Speed ramp up
+        this.time.addEvent({ delay: 5000, callback: () => { this.speed += 1.5 }, loop: true })
 
         this.scene.launch('ui')
     }
@@ -74,11 +87,12 @@ export default class GameScene extends Phaser.Scene {
     update() {
         if (this.gameOverFlag) return;
 
-        // Move Ground Texture
+        // --- Scroll the Floor Texture ---
+        // This gives the illusion of speed on the surface
         this.ground.tilePositionY -= this.speed
 
-        // Player Movement
-        const moveSpeed = 400
+        // --- Player Controls ---
+        const moveSpeed = 500
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-moveSpeed)
             this.player.setFlipX(true)
@@ -87,45 +101,69 @@ export default class GameScene extends Phaser.Scene {
             this.player.setFlipX(false)
         } else {
             this.player.setVelocityX(0)
-            this.player.setDragX(1000)
+            this.player.setDragX(2000) // Snappy stop
         }
 
-        // Player Actions
-        if (this.cursors.up.isDown && !this.isJumping && !this.isDucking){
+        if (this.cursors.up.isDown && !this.isJumping && !this.isDucking) {
             this.jump()
         } else if (this.cursors.down.isDown && !this.isJumping && !this.isDucking) {
             this.duck()
         }
 
-        // Update Obstacles (Pseudo-3D)
-        const horizonY = this.ch * 0.3
-        
-        this.obstacleGroup.getChildren().forEach(obs => {
-            obs.zProgress += (this.speed * 0.0005)
+        // --- Update 3D Objects ---
+        this.update3DObject(this.obstacleGroup, true) // True = check collisions
+        this.update3DObject(this.sceneryGroup, false) // False = just visual
+    }
 
-            // Scale grows exponentially
-            const scale = Math.pow(obs.zProgress, 3)
-            obs.setScale(scale)
+    /**
+     * Generic function to handle 3D scaling and movement for both obstacles and scenery
+     */
+    update3DObject(group, checkCollision) {
+        group.getChildren().forEach(obj => {
+            // zProgress: 0 = Horizon, 1 = Player Position (approx), >1 = Behind Camera
+            obj.zProgress += (this.speed * 0.0006)
 
-            // X moves away from center, Y moves down
-            obs.x = (this.cw / 2) + (obs.laneOffset * scale * this.cw)
-            obs.y = horizonY + (obs.zProgress * (this.ch - horizonY))
+            // --- SCALING LOGIC (Fixed) ---
+            // Use a curve that starts slow and speeds up, but cap it.
+            // Math.pow(x, 3) creates the "zooming in" effect.
+            let rawScale = Math.pow(obj.zProgress, 3)
             
-            // Layering
-            obs.setDepth(obs.y)
+            // CAP THE SCALE: Prevent items from becoming bigger than the screen
+            // If the original image is huge, rawScale 1 is huge. 
+            // We multiply by 'obj.baseScale' to keep natural size relative.
+            const currentScale = Math.min(rawScale * obj.baseScale, 1.5) 
+            
+            obj.setScale(currentScale)
 
-            // Collision Check (Only when close)
-            if (obs.zProgress > 0.85 && obs.zProgress < 1.1) {
-                if (Math.abs(obs.x - this.player.x) < 50 * scale) {
-                    this.checkCollisionType(obs)
+            // --- POSITIONING LOGIC ---
+            // x = Center + (Lane Offset * PerspectiveSpread * ScreenWidth)
+            // As scale grows, the spread grows, making things move to the sides.
+            obj.x = (this.cw / 2) + (obj.laneOffset * rawScale * this.cw)
+
+            // y = Horizon + (Progress * Height of Slope)
+            const slopeHeight = this.ch - this.horizonY
+            obj.y = this.horizonY + (obj.zProgress * slopeHeight)
+
+            // --- DEPTH SORTING ---
+            // Things closer to the bottom (higher Y) should be drawn on top
+            obj.setDepth(Math.floor(obj.y))
+
+            // --- COLLISION ---
+            if (checkCollision && obj.zProgress > 0.8 && obj.zProgress < 1.0) {
+                // Determine Hit Distance based on current visual size
+                const hitDist = 60 * currentScale
+                if (Math.abs(obj.x - this.player.x) < hitDist) {
+                    this.checkCollisionType(obj)
                 }
             }
 
-            // Cleanup
-            if (obs.zProgress > 1.2) {
-                obs.destroy()
-                this.score += 10
-                this.events.emit('updateScore', this.score)
+            // --- CLEANUP ---
+            if (obj.zProgress > 1.3) { // Wait until it's fully off screen
+                obj.destroy()
+                if (checkCollision) {
+                    this.score += 10
+                    this.events.emit('updateScore', this.score)
+                }
             }
         })
     }
@@ -133,24 +171,58 @@ export default class GameScene extends Phaser.Scene {
     spawnObstacle() {
         if (this.gameOverFlag) return;
 
-        const lane = Phaser.Math.RND.pick([-0.6, -0.3, 0, 0.3, 0.6])
+        // Playable Lanes: -0.5 (Left), 0 (Center), 0.5 (Right)
+        const lane = Phaser.Math.RND.pick([-0.5, 0, 0.5])
         const types = ['tree', 'rock', 'log']
         const type = Phaser.Math.RND.pick(types)
 
-        const obs = this.add.sprite(this.cw / 2, 0, type)
-        this.physics.add.existing(obs, true)
-
+        const obs = this.add.sprite(this.cw / 2, this.horizonY, type)
+        
+        // Initialize 3D properties
         obs.type = type
-        obs.laneOffset = lane
-        obs.zProgress = 0.01
+        obs.laneOffset = lane 
+        obs.zProgress = 0.01 // Start at horizon
+        
+        // Base scale adjustment: 
+        // If your source images are huge, reduce this number.
+        // Trees are usually tall, Rocks small.
+        if (type === 'tree') obs.baseScale = 0.8
+        else if (type === 'rock') obs.baseScale = 0.5
+        else obs.baseScale = 0.7
+
         obs.setScale(0)
 
-        // FIX: Check if animation exists before playing
+        // Animation
         if (type === 'tree' && this.anims.exists('tree_sway')) {
             obs.play('tree_sway')
         }
 
         this.obstacleGroup.add(obs)
+    }
+
+    spawnScenery() {
+        if (this.gameOverFlag) return;
+
+        // Scenery Lanes: Way off to the side (-1.2 to -3.0 and 1.2 to 3.0)
+        // This creates the "Forest Tunnel" effect
+        const side = Phaser.Math.RND.pick([-1, 1]) // Left or Right
+        const randomOffset = Phaser.Math.FloatBetween(1.2, 2.5) // How far to the side
+        const finalLane = side * randomOffset
+
+        const tree = this.add.sprite(this.cw / 2, this.horizonY, 'tree')
+        
+        tree.type = 'scenery'
+        tree.laneOffset = finalLane
+        tree.zProgress = 0.01
+        tree.baseScale = Phaser.Math.FloatBetween(0.8, 1.2) // Varied sizes
+        tree.setScale(0)
+        
+        // Darken side trees slightly to make the playable path pop
+        tree.setTint(0xdddddd)
+
+        if (this.anims.exists('tree_sway')) tree.play('tree_sway')
+
+        this.sceneryGroup.add(tree)
     }
 
     jump() {
@@ -167,7 +239,7 @@ export default class GameScene extends Phaser.Scene {
             onComplete: () => {
                 this.isJumping = false
                 this.player.setTexture('player_ski')
-                this.player.y = this.playerY;
+                this.player.y = this.playerY
             }
         })
     }
@@ -176,10 +248,13 @@ export default class GameScene extends Phaser.Scene {
         this.isDucking = true
         this.sfxSlide.play()
         this.player.setTexture('player_duck')
+        // Move hitbox down visually?
+        this.player.y = this.playerY + 20 
 
         this.time.delayedCall(800, () => {
             this.isDucking = false
             this.player.setTexture("player_ski")
+            this.player.y = this.playerY
         })
     }
 
@@ -188,7 +263,7 @@ export default class GameScene extends Phaser.Scene {
 
         if (obs.type === 'tree') {
             hit = true
-        } else if (obs.type == 'rock'){
+        } else if (obs.type == 'rock') {
             if (!this.isJumping) hit = true
         } else if (obs.type == 'log') {
             if (!this.isDucking) hit = true
@@ -208,7 +283,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.time.delayedCall(1000, () => {
             this.scene.stop('ui')
-            this.scene.start('gameover', {score: this.score})
+            this.scene.start('gameover', { score: this.score })
         })
     }
 }

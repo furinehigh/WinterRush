@@ -9,7 +9,7 @@ export default class Preload extends Phaser.Scene {
         this.load.image('ground', 'bg/ground_texture.jpg')
 
         this.load.spritesheet('player_ski', 'player/player_ski.png', {
-            frameWidth: 128, frameHeight: 128
+            frameWidth: 200, frameHeight: 250
         })
 
         this.load.image('player_jump', 'player/player_jump.png')
