@@ -6,7 +6,7 @@ import * as THREE from "three"
 import { useGameStore } from "@/store/gameStore"
 
 const WORLD_SPEED = 1
-const WORLD_TO_TEXTURE = 1 / 4
+const WORLD_TO_TEXTURE = 1 / 5
 
 export default function Environment() {
     const { speed, status } = useGameStore()

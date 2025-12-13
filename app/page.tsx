@@ -20,6 +20,8 @@ export default function Home() {
 
 function UIOverlay() {
   const { status, score, startGame, reset } = useGameStore()
+  const [isHighScore, setIsHighScore] = useState(false)
+  const [highScore, setHighScore] = useState(0)
 
   const { progress } = useProgress()
 
@@ -31,6 +33,15 @@ function UIOverlay() {
 
     }
   }, [progress])
+
+  useEffect(() => {
+      const highScore = Number(localStorage.getItem('highScore'))
+      setHighScore(highScore)
+      if (highScore < score) {
+        localStorage.setItem('highScore', String(score))
+        setIsHighScore(true)
+      }
+  }, [status])
 
   return (
     <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center text-white">
@@ -123,6 +134,16 @@ function UIOverlay() {
                 >
                   PLAY
                 </motion.button>
+
+                {highScore > 0 && <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                  className="mt-4 text-xl text-white/60 tracking-wider"
+
+                >
+                  High Score: {highScore}
+                </motion.p>}
               </motion.div>
             )}
 
@@ -133,7 +154,7 @@ function UIOverlay() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.35 }}
-                className="pointer-events-auto text-center"
+                className="pointer-events-auto text-center flex flex-col"
               >
                 <motion.h2
                   initial={{ y: -40 }}
@@ -150,10 +171,24 @@ function UIOverlay() {
                 <motion.button
                   whileHover={{ scale: 1.06 }}
                   whileTap={{ scale: 0.94 }}
-                  onClick={reset}
+                  onClick={() => {
+                    reset()
+                    setTimeout(() => {
+
+                      startGame()
+                    }, 500)
+                  }}
                   className="mt-10 px-12 py-3 text-xl font-bold border border-white/30 text-white hover:border-white transition-all"
                 >
                   RETRY
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.94 }}
+                  onClick={reset}
+                  className="mt-3 px-12 py-3 text-xl font-bold border border-white/30 text-white hover:border-white transition-all"
+                >
+                  MENU
                 </motion.button>
               </motion.div>
             )}

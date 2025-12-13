@@ -26,6 +26,7 @@ export default function Player() {
         isDucking,
         setIsJumping,
         setIsDucking
+
     } = useGameStore()
 
     const jumpStart = useRef(0)
@@ -95,7 +96,7 @@ export default function Player() {
             // slight stretch for cartoon pop
             modelRef.current.scale.y = MathUtils.lerp(
                 modelRef.current.scale.y,
-                1 + arc * 1, // more airtime feel
+                1 + arc * 0.2, // more airtime feel
                 t
             )
 
