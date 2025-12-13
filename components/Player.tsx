@@ -15,7 +15,7 @@ export default function Player() {
     const modelRef = useRef<Group>(null)
 
     const idle = useGLTF('/skier_idle.glb')
-    const jump = useGLTF('/snowman_head.glb')
+    const jump = useGLTF('/skier_idle.glb')
     const duck = useGLTF('/snowman_head.glb')
 
     const {
@@ -75,7 +75,7 @@ export default function Player() {
         const diff = targetX - groupRef.current.position.x
         groupRef.current.rotation.z = MathUtils.lerp(
             groupRef.current.rotation.z,
-            -diff * 0.15,
+            -diff * 0.01,
             t
         )
 
@@ -133,6 +133,7 @@ export default function Player() {
                     scale={0.2}
                     position={[0, -0.9, 0]}
                     rotation={[0, Math.PI / 2, 0]}
+                    
                 />
             </group>
         </group>

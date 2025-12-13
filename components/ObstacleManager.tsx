@@ -3,7 +3,7 @@
 import { useGameStore } from "@/store/gameStore"
 import { useFrame } from "@react-three/fiber"
 import { useRef, useState, useEffect } from "react"
-import { useGLTF, Clone } from "@react-three/drei" // Import Clone and useGLTF
+import { useGLTF, Clone } from "@react-three/drei" 
 
 type ObstacleType = 'TREE' | 'ROCK' | 'LOG'
 
@@ -12,15 +12,12 @@ interface ObstacleData {
     lane: number,
     z: number,
     type: ObstacleType
-    // We add a random rotation for trees/rocks so they don't look identical
     rotationY: number 
 }
 
 export default function ObstacleManager() {
     const [obstacles, setObstacles] = useState<ObstacleData[]>([])
     
-    // Pre-load models so they don't pop in when the game starts
-    // Make sure these files exist in your /public folder!
     const treeModel = useGLTF('/tree.glb')
     const rockModel = useGLTF('/rock.glb')
     const logModel = useGLTF('/log.glb')
@@ -46,13 +43,12 @@ export default function ObstacleManager() {
             const next = prev.map((obs) => {
                 const newZ = obs.z + speed * delta
 
-                // --- COLLISION LOGIC ---
-                // We assume the model is roughly 1 unit deep. 
-                // You might need to tweak these numbers based on your specific model sizes.
+                // Collision Logic
                 if (newZ > -1 && newZ < 1) { 
                     if (obs.lane === playerLane) {
                         let collision = true
 
+                        // Logic: Rock = Jump over, Log = Duck under
                         if (obs.type === 'ROCK' && isJumping) collision = false
                         else if (obs.type === 'LOG' && isDucking) collision = false
                         
@@ -83,6 +79,7 @@ export default function ObstacleManager() {
 
     const spawnNewObstacle = () => {
         const lanes = [-1, 0, 1]
+        // Adjusted probabilities
         const types: ObstacleType[] = ['TREE', 'TREE', 'ROCK', 'LOG', 'ROCK']
         
         const lane = lanes[Math.floor(Math.random() * lanes.length)]
@@ -93,7 +90,7 @@ export default function ObstacleManager() {
             lane,
             z: -100,
             type,
-            rotationY: Math.random() * Math.PI * 2 // Random rotation
+            rotationY: Math.random() * Math.PI * 2 
         }])
     }
 
@@ -103,7 +100,6 @@ export default function ObstacleManager() {
                 <Obstacle 
                     key={obs.id} 
                     data={obs} 
-                    // Pass the loaded scenes down
                     models={{
                         tree: treeModel.scene, 
                         rock: rockModel.scene, 
@@ -118,14 +114,15 @@ export default function ObstacleManager() {
 const Obstacle = ({ data, models }: { data: ObstacleData, models: any }) => {
     const x = data.lane * 3.5
 
+    // FIX: Position Y set to -1 to match the floor level in Environment.tsx
     return (
-        <group position={[x, 0, data.z]}>
+        <group position={[x, -1, data.z]}>
             
             {/* TREE */}
             {data.type === 'TREE' && (
                 <group 
                     position={[0, 0, 0]} 
-                    rotation={[0, data.rotationY, 0]} // Random Y spin
+                    rotation={[0, data.rotationY, 0]} 
                 >
                     <Clone 
                         object={models.tree} 
@@ -139,12 +136,12 @@ const Obstacle = ({ data, models }: { data: ObstacleData, models: any }) => {
             {/* ROCK */}
             {data.type === 'ROCK' && (
                 <group 
-                    position={[0, 0, 0]} // Rocks usually sit on the floor
+                    position={[0, 0, 0]} 
                     rotation={[0, data.rotationY, 0]} 
                 >
                     <Clone 
                         object={models.rock} 
-                        scale={0.02} 
+                        scale={0.008} 
                         castShadow
                         receiveShadow
                     />
@@ -153,7 +150,7 @@ const Obstacle = ({ data, models }: { data: ObstacleData, models: any }) => {
 
             {/* LOG (Obstacle you must slide UNDER) */}
             {data.type === 'LOG' && (
-                <group position={[0, 0, 0]}> {/* Lifted HIGH up */}
+                <group position={[0, 0, 0]}> 
                     <group rotation={[0, 0, 0]}> 
                         <Clone 
                             object={models.log} 
