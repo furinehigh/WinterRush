@@ -128,7 +128,6 @@ const Obstacle = ({ data, models }: { data: ObstacleData, models: any }) => {
                         object={models.tree} 
                         scale={0.7} 
                         castShadow 
-                        receiveShadow
                     />
                 </group>
             )}
@@ -143,7 +142,6 @@ const Obstacle = ({ data, models }: { data: ObstacleData, models: any }) => {
                         object={models.rock} 
                         scale={0.008} 
                         castShadow
-                        receiveShadow
                     />
                 </group>
             )}

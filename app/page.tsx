@@ -1,6 +1,7 @@
 'use client'
 
 import GameScene from "@/components/GameScene"
+import SoundManager from "@/components/SoundManager"
 import { useGameStore } from "@/store/gameStore"
 import { useProgress } from "@react-three/drei"
 import { motion, AnimatePresence } from "framer-motion"
@@ -9,6 +10,7 @@ import { useEffect, useState } from "react"
 export default function Home() {
   return (
     <main className="relative w-full h-screen overflow-hidden bg-transparent ">
+      <SoundManager />
       <div className="absolute inset-0 z-0">
         <GameScene />
       </div>
