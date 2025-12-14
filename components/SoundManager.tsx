@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react"
 
 
 export default function SoundManager() {
-    const { status, isJumping, playerLane, score } = useGameStore()
+    const { status, isJumping, playerLane, score, snowballs } = useGameStore()
 
 
 
@@ -27,8 +27,11 @@ export default function SoundManager() {
     const slideRef = useRef<HTMLAudioElement | null>(null)
     const crashRef = useRef<HTMLAudioElement | null>(null)
     const winRef = useRef<HTMLAudioElement | null>(null)
+    const collectRef = useRef<HTMLAudioElement | null>(null)
+
 
     const prevLane = useRef(playerLane)
+    const prevSnowballs = useRef(snowballs)
 
     const [isMuted, setIsMuted] = useState(false)
 
@@ -52,6 +55,9 @@ export default function SoundManager() {
 
         winRef.current = new Audio('/sounds/win.mp3')
         winRef.current.volume = 1
+
+        collectRef.current = new Audio('/sounds/collect.mp3')
+        collectRef.current.volume = 0.6
 
         return () => {
             bgmRef.current?.pause()
@@ -101,6 +107,16 @@ export default function SoundManager() {
         prevLane.current = playerLane
     }, [playerLane, status, isMuted])
 
+    useEffect(() => {
+        if (snowballs > prevSnowballs.current && status === 'PLAYING' && !isMuted) {
+            if (collectRef.current) {
+                collectRef.current.currentTime = 0
+                collectRef.current.play().catch(() => {})
+            }
+        }
+        prevSnowballs.current = snowballs
+    }, [snowballs, status, isMuted])
+
     return (
         <div className="absolute top-4 right-4 z-50">
             <button onClick={() => {
@@ -109,8 +125,8 @@ export default function SoundManager() {
                     bgmRef.current?.pause()
                     windRef.current?.pause()
                 } else if (status == 'PLAYING') {
-                    bgmRef.current?.play()
-                    windRef.current?.play()
+                    bgmRef.current?.play().catch(() => {})
+                    windRef.current?.play().catch(() => {})
                 }
             }}
                 className="text-white/50 hover:text-white font-bold border border-white/20 p-2 rounded-full w-10 h-10 flex items-center justify-center transition-colors z-40"
