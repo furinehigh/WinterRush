@@ -23,7 +23,7 @@ export default function Home() {
 }
 
 function UIOverlay() {
-  const { status, score, startGame, reset } = useGameStore()
+  const { status, score, startGame, reset, snowballs } = useGameStore()
   const { width, height } = useWindowSize()
   const { progress } = useProgress()
 
@@ -124,15 +124,26 @@ function UIOverlay() {
           {/* SCORE */}
           <AnimatePresence>
             {status === 'PLAYING' && (
-              <motion.div
-                key="score"
+               <motion.div
+                key="hud"
                 initial={{ opacity: 0, y: -30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -30 }}
-                transition={{ duration: 0.3 }}
-                className="absolute top-6 text-6xl font-black tracking-widest text-white/90"
+                className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start max-w-4xl mx-auto"
               >
-                {Math.floor(score)}
+                {/* Distance Score */}
+                <div className="flex flex-col items-center">
+                    <span className="text-xs font-bold text-white/50 tracking-widest">SCORE</span>
+                    <span className="text-5xl font-black italic">{Math.floor(score)}</span>
+                </div>
+
+                {/* Snowball Count */}
+                <div className="flex flex-col items-center">
+                    <span className="text-xs font-bold text-white/50 tracking-widest">SNOWBALLS</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-5xl font-black italic text-cyan-300">{snowballs}</span>
+                    </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
