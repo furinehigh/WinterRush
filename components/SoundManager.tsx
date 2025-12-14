@@ -6,13 +6,31 @@ import { useEffect, useRef, useState } from "react"
 
 
 export default function SoundManager() {
-    const {status, isJumping, playerLane, score} = useGameStore()
+    const { status, isJumping, playerLane, score } = useGameStore()
+    const [isHighScore, setIsHighScore] = useState(false)
+    const [highScore, setHighScore] = useState(0)
+
+
+
+    useEffect(() => {
+        if (status == 'GAME_OVER') {
+
+            const highScore = Number(localStorage.getItem('highScore'))
+            setHighScore(highScore)
+            if (highScore < score) {
+                localStorage.setItem('highScore', String(score))
+                setIsHighScore(true)
+                winRef.current?.play().catch(() => {})
+            }
+        }
+    }, [status])
 
     const bgmRef = useRef<HTMLAudioElement | null>(null)
     const windRef = useRef<HTMLAudioElement | null>(null)
     const jumpRef = useRef<HTMLAudioElement | null>(null)
     const slideRef = useRef<HTMLAudioElement | null>(null)
     const crashRef = useRef<HTMLAudioElement | null>(null)
+    const winRef = useRef<HTMLAudioElement | null>(null)
 
     const prevLane = useRef(playerLane)
 
@@ -36,7 +54,10 @@ export default function SoundManager() {
         crashRef.current = new Audio('/sounds/crash.mp3')
         crashRef.current.volume = 0.8
 
-        return () =>{
+        winRef.current = new Audio('/sounds/win.mp3')
+        winRef.current.volume = 1
+
+        return () => {
             bgmRef.current?.pause()
             windRef.current?.pause()
         }
@@ -46,17 +67,17 @@ export default function SoundManager() {
         if (isMuted) return
 
         if (status == 'PLAYING') {
-            bgmRef.current?.play().catch(() => {})
-            windRef.current?.play().catch(() => {})
+            bgmRef.current?.play().catch(() => { })
+            windRef.current?.play().catch(() => { })
 
-        } else if (status === 'GAME_OVER'){
+        } else if (status === 'GAME_OVER') {
             bgmRef.current?.pause()
             windRef.current?.pause()
 
             if (bgmRef.current) bgmRef.current.currentTime = 0
 
-            crashRef.current?.play().catch(() => {})
-        } else if (status ==='MENU') {
+            crashRef.current?.play().catch(() => { })
+        } else if (status === 'MENU') {
             bgmRef.current?.pause()
             windRef.current?.pause()
         }
@@ -66,7 +87,7 @@ export default function SoundManager() {
         if (isJumping && status == 'PLAYING' && !isMuted) {
             if (jumpRef.current) {
                 jumpRef.current.currentTime = 0
-                jumpRef.current.play().catch(() => {})
+                jumpRef.current.play().catch(() => { })
 
 
             }
@@ -77,7 +98,7 @@ export default function SoundManager() {
         if (prevLane.current !== playerLane && status === 'PLAYING' && !isMuted) {
             if (slideRef.current) {
                 slideRef.current.currentTime = 0
-                slideRef.current.play().catch(() => {})
+                slideRef.current.play().catch(() => { })
             }
         }
 
@@ -85,10 +106,10 @@ export default function SoundManager() {
     }, [playerLane, status, isMuted])
 
     return (
-        <div>
+        <div className="absolute top-4 right-4 z-50">
             <button onClick={() => {
                 setIsMuted(!isMuted)
-                if (!isMuted){
+                if (!isMuted) {
                     bgmRef.current?.pause()
                     windRef.current?.pause()
                 } else if (status == 'PLAYING') {
@@ -96,7 +117,7 @@ export default function SoundManager() {
                     windRef.current?.play()
                 }
             }}
-            className="text-white/50 hover:text-white font-bold border border-white/20 p-2 rounded-full w-10 h-10 flex items-center justify-center transition-colors"
+                className="text-white/50 hover:text-white font-bold border border-white/20 p-2 rounded-full w-10 h-10 flex items-center justify-center transition-colors z-40"
             >
                 {isMuted ? <VolumeX /> : <Volume2 />}
             </button>
