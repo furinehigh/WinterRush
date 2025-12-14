@@ -7,8 +7,6 @@ import { useEffect, useRef, useState } from "react"
 
 export default function SoundManager() {
     const { status, isJumping, playerLane, score } = useGameStore()
-    const [isHighScore, setIsHighScore] = useState(false)
-    const [highScore, setHighScore] = useState(0)
 
 
 
@@ -16,10 +14,8 @@ export default function SoundManager() {
         if (status == 'GAME_OVER') {
 
             const highScore = Number(localStorage.getItem('highScore'))
-            setHighScore(highScore)
             if (highScore < score) {
                 localStorage.setItem('highScore', String(score))
-                setIsHighScore(true)
                 winRef.current?.play().catch(() => {})
             }
         }
