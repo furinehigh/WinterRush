@@ -147,8 +147,6 @@ function addJungleItem(arr: SceneryItem[], idBase: number, zBase: number, side: 
 
     const scaleBase = Math.random() * 0.5 + 0.5
 
-    // FIX: Rock scale drastically reduced (0.015)
-    // Trees kept normal
     const finalScale: [number, number, number] = isRock 
         ? [0.008, 0.008, 0.008] 
         : [scaleBase, scaleBase, scaleBase]
